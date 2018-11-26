@@ -129,6 +129,10 @@ class HibernateModule(
       override fun configureHibernate() {
         bindListener(EventType.PRE_INSERT).to<TimestampListener>()
         bindListener(EventType.PRE_UPDATE).to<TimestampListener>()
+
+        bindListener(EventType.PRE_INSERT).to<IntegrityListener>()
+        bindListener(EventType.PRE_UPDATE).to<IntegrityListener>()
+//        bindListener(EventType.POST_LOAD).to<IntegrityListener>()
       }
     })
 
