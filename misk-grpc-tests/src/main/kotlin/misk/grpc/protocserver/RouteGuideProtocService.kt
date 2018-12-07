@@ -7,12 +7,19 @@ import routeguide.RouteGuideProto.Point
 import javax.inject.Singleton
 
 @Singleton
-internal class RouteGuideProtocService : RouteGuideImplBase() {
+class RouteGuideProtocService : RouteGuideImplBase() {
+  var afterFeatureThrowable: Throwable? = null
+
   override fun getFeature(point: Point, responseObserver: StreamObserver<Feature>) {
     responseObserver.onNext(Feature.newBuilder()
         .setName("pine tree")
         .setLocation(point)
         .build())
-    responseObserver.onCompleted()
+
+    if (afterFeatureThrowable != null) {
+      responseObserver.onError(afterFeatureThrowable)
+    } else {
+      responseObserver.onCompleted()
+    }
   }
 }
