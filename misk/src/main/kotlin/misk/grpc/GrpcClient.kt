@@ -21,7 +21,7 @@ class GrpcClient(
   val client: OkHttpClient,
   val url: HttpUrl
 ) {
-  fun <S, R> call(method: GrpcMethod<S, R>, request: S): R? {
+  fun <S, R> call(method: GrpcMethod<S, R>, request: S): List<R> {
     hackOkHttp()
 
     val headersListener = HeadersListener { headers -> println("HELLO  headers $headers") }
@@ -31,7 +31,6 @@ class GrpcClient(
         .url(url.resolve(method.path)!!)
         .addHeader("content-type", MediaTypes.APPLICATION_GRPC_MEDIA_TYPE.toString())
         .addHeader("te", "trailers")
-        .addHeader("taco", "tacox")
         .addHeader("grpc-trace-bin", "")
         .addHeader("grpc-accept-encoding", "gzip")
 
@@ -53,7 +52,7 @@ class GrpcClient(
     val grpcWriter = GrpcWriter.get(sink, method.requestAdapter)
     grpcWriter.writeMessage(request)
     grpcWriter.flush()
-    httpSink.headers(Headers.of("grpc-status", "0"))
+//    httpSink.headers(Headers.of("grpc-status", "0"))
     grpcWriter.close()
 
     val grpcEncoding = response.header("grpc-encoding")
@@ -61,9 +60,17 @@ class GrpcClient(
 
     println("Some response: ${responseSource.readUtf8Line()}")
 
+    val result = mutableListOf<R>()
+
     GrpcReader.get(responseSource, method.responseAdapter, grpcEncoding).use {
-      return it.readMessage()
+      while (true) {
+        val message = it.readMessage() ?: break
+        println("RECEIVED $message")
+        result += message
+      }
     }
+
+    return result.toList()
   }
 
   private fun hackOkHttp() {
