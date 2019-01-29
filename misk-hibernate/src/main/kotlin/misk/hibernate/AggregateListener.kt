@@ -3,6 +3,8 @@ package misk.hibernate
 import com.google.common.collect.LinkedHashMultimap
 import org.hibernate.event.service.spi.EventListenerRegistry
 import org.hibernate.event.spi.EventType
+import org.hibernate.event.spi.PostLoadEvent
+import org.hibernate.event.spi.PostLoadEventListener
 import org.hibernate.event.spi.PreDeleteEvent
 import org.hibernate.event.spi.PreDeleteEventListener
 import org.hibernate.event.spi.PreInsertEvent
@@ -22,7 +24,8 @@ internal class AggregateListener(
 ) : PreLoadEventListener,
     PreDeleteEventListener,
     PreUpdateEventListener,
-    PreInsertEventListener {
+    PreInsertEventListener,
+    PostLoadEventListener {
   private val multimap = LinkedHashMultimap.create<EventType<*>, Provider<*>>()!!
 
   init {
@@ -66,5 +69,11 @@ internal class AggregateListener(
       veto = veto or (provider.get() as PreInsertEventListener).onPreInsert(event)
     }
     return veto
+  }
+
+  override fun onPostLoad(event: PostLoadEvent?) {
+    for (provider in multimap[EventType.POST_LOAD]) {
+      (provider.get() as PostLoadEventListener).onPostLoad(event)
+    }
   }
 }

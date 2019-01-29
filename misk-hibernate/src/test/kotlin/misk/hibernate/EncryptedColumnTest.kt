@@ -1,12 +1,13 @@
 package misk.hibernate
 
-import misk.MiskServiceModule
+import misk.MiskTestingServiceModule
 import misk.config.Config
 import misk.config.MiskConfig
 import misk.environment.Environment
 import misk.environment.EnvironmentModule
 import misk.inject.KAbstractModule
 import misk.jdbc.DataSourceConfig
+import misk.logging.getLogger
 import misk.testing.MiskTest
 import misk.testing.MiskTestModule
 import okio.ByteString
@@ -18,6 +19,8 @@ import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Table
 
+private val logger = getLogger<EncryptedColumnTest>()
+
 @MiskTest(startService = true)
 internal class EncryptedColumnTest {
   @MiskTestModule
@@ -25,16 +28,21 @@ internal class EncryptedColumnTest {
 
   @Inject @EncryptedColumn lateinit var transacter: Transacter
 
+
   @Test
   fun basic() {
     transacter.transaction { session -> {
+      session.save(DbHeroIdentity())
+      session.save(DbHeroIdentity())
+      session.save(DbHeroIdentity())
+      session.save(DbHeroIdentity())
       session.save(DbHeroIdentity())
     }}
   }
 
   class TestModule : KAbstractModule() {
     override fun configure() {
-      install(MiskServiceModule())
+      install(MiskTestingServiceModule())
       install(EnvironmentModule(Environment.TESTING))
 
       val config = MiskConfig.load<EncryptedColumnTest.RootConfig>("encryptedcolumn",
@@ -62,8 +70,15 @@ internal class EncryptedColumnTest {
     @GeneratedValue
     override lateinit var id: Id<DbHeroIdentity>
 
+    init {
+      logger.info("Init WTF")
+    }
+
     @Column(nullable = false)
     lateinit var hero: String
+
+    @Column(nullable = false)
+    lateinit var real_identity : String
 
     @Column(nullable = true)
     override lateinit var encrypted_data: ByteString

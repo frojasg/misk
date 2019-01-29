@@ -18,6 +18,7 @@ internal class ListenerRegistration(
       EventType.PRE_INSERT -> Unit
       EventType.PRE_UPDATE -> Unit
       EventType.PRE_DELETE -> Unit
+      EventType.POST_LOAD -> Unit
       else -> throw UnsupportedOperationException("$type not currently supported")
     }
   }
