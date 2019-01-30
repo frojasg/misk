@@ -63,9 +63,19 @@ internal class EncryptedColumnTest {
   @Target(AnnotationTarget.FIELD, AnnotationTarget.FUNCTION)
   annotation class EncryptedColumn
 
+
   @Entity
   @Table(name = "hero_identity")
   class DbHeroIdentity : DbUnsharded<DbHeroIdentity>, DbEncryptedEntity {
+    override fun setDeserialized(value: String) {
+      secret = value
+    }
+
+    override fun getSerialize(): String {
+
+      return secret
+    }
+
     @javax.persistence.Id
     @GeneratedValue
     override lateinit var id: Id<DbHeroIdentity>
@@ -73,6 +83,9 @@ internal class EncryptedColumnTest {
     init {
       logger.info("Init WTF")
     }
+
+    @Transient
+    lateinit var secret: String
 
     @Column(nullable = false)
     lateinit var hero: String

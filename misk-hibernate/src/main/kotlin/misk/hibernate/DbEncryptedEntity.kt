@@ -1,8 +1,21 @@
 package misk.hibernate
 
+import com.squareup.moshi.JsonAdapter
 import okio.ByteString
 
+
 interface DbEncryptedEntity {
+
+//  fun setDecryptedData(value: T)
+//
+//  fun getDecryptedData(): T
+//
+//  fun getAdapter(): JsonAdapter<T>
+
+  fun setDeserialized(value: String)
+
+  fun getSerialize(): String
+
   // An encrypted entity has signed columns in it. These columns are verified on load against
   // the encrypted HASH here. This should be done at load time.
   // The idea is that the hash is signed and can't be tampered with, without subsequent detection
@@ -24,5 +37,5 @@ interface DbEncryptedEntity {
 
   // Another idea is to just add encryption in the same way as we have done for franklin.
   // Again. This needs to be done via an encryption layer.
-  val encrypted_data: ByteString
+  var encrypted_data: ByteString
 }
