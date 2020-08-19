@@ -17,6 +17,7 @@ import misk.testing.MiskTestModule
 import misk.web.actions.WebAction
 import misk.web.jetty.JettyService
 import misk.web.mediatype.MediaTypes
+import okhttp3.Headers
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -86,6 +87,26 @@ internal class JsonForProtoEndpointsTest {
         .post(moshi.adapter(Shipment::class.java).toJson(requestBody)
             .toRequestBody(MediaTypes.APPLICATION_JSON_MEDIA_TYPE))
         .url(serverUrlBuilder().encodedPath("/test/GetDestinationWarehouse").build())
+        .headers(Headers.Builder()
+            .addUnsafeNonAscii("X-device-name", "κόσμε")
+            .addUnsafeNonAscii("X-device-name-1", "�")
+            .addUnsafeNonAscii("X-device-name-2", "\u0080\"")
+            .addUnsafeNonAscii("X-device-name-3", "\uD800\uDC00")
+            .addUnsafeNonAscii("X-device-name-4", "�����")
+            .addUnsafeNonAscii("X-device-name-5", "������")
+            .addUnsafeNonAscii("X-device-name-6", "\u007F")
+            .addUnsafeNonAscii("X-device-name-7", "߿")
+            .addUnsafeNonAscii("X-device-name-8", "\uFFFF")
+            .addUnsafeNonAscii("X-device-name-9", "����")
+            .addUnsafeNonAscii("X-device-name-10", "�����")
+            .addUnsafeNonAscii("X-device-name-11", "������")
+            .addUnsafeNonAscii("X-device-name-12", "�")
+            .addUnsafeNonAscii("X-device-name-13", "�")
+            .addUnsafeNonAscii("X-device-name-14", "��")
+            .addUnsafeNonAscii("X-device-name-15", "� � � � � � � � � � � � � � � � ")
+            .addUnsafeNonAscii("X-device-name-16", "�����")
+            .addUnsafeNonAscii("X-device-name-17", "����")
+            .build())
         .build()
 
     val response = httpClient.newCall(request).execute()
