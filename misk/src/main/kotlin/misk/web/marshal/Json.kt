@@ -1,6 +1,10 @@
 package misk.web.marshal
 
+import UnmarshallingDataException
+import UnmarshallingEncodingException
 import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.JsonDataException
+import com.squareup.moshi.JsonEncodingException
 import com.squareup.moshi.Moshi
 import misk.web.ResponseBody
 import misk.web.marshal.Marshaller.Companion.actualResponseType
@@ -40,7 +44,13 @@ class JsonMarshaller<T>(val adapter: JsonAdapter<T>) : Marshaller<T> {
 }
 
 class JsonUnmarshaller(val adapter: JsonAdapter<Any>) : Unmarshaller {
-  override fun unmarshal(requestHeaders: Headers, source: BufferedSource) = adapter.fromJson(source)
+  override fun unmarshal(requestHeaders: Headers, source: BufferedSource) = try {
+    adapter.fromJson(source)
+  } catch (e: JsonEncodingException) {
+    throw UnmarshallingEncodingException(e.message ?: "Failed to decode JSON", e)
+  } catch (e: JsonDataException) {
+    throw UnmarshallingDataException(e.message ?: "Invalid JSON data", e)
+  }
 
   @Singleton
   class Factory @Inject internal constructor(val moshi: Moshi) : Unmarshaller.Factory {

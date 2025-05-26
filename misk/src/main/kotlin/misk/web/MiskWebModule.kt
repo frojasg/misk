@@ -1,5 +1,7 @@
 package misk.web
 
+import UnmarshallingDataException
+import UnmarshallingEncodingException
 import com.google.common.util.concurrent.Service
 import com.google.inject.BindingAnnotation
 import com.google.inject.Key
@@ -44,6 +46,8 @@ import misk.web.exceptions.ExceptionMapperModule
 import misk.web.exceptions.GrpcExceptionMapper
 import misk.web.exceptions.IOExceptionMapper
 import misk.web.exceptions.RequestBodyExceptionMapper
+import misk.web.exceptions.UnmarshallingDataExceptionMapper
+import misk.web.exceptions.UnmarshallingEncodingExceptionMapper
 import misk.web.exceptions.WebActionExceptionMapper
 import misk.web.extractors.FormValueFeatureBinding
 import misk.web.extractors.PathParamFeatureBinding
@@ -245,6 +249,8 @@ class MiskWebModule @JvmOverloads constructor(
     install(ExceptionMapperModule.create<IOException, IOExceptionMapper>())
     install(ExceptionMapperModule.create<EofException, EofExceptionMapper>())
     install(ExceptionMapperModule.create<RequestBodyException, RequestBodyExceptionMapper>())
+    install(ExceptionMapperModule.create<UnmarshallingEncodingException, UnmarshallingEncodingExceptionMapper>())
+    install(ExceptionMapperModule.create<UnmarshallingDataException, UnmarshallingDataExceptionMapper>())
 
     // Register built-in feature bindings.
     multibind<FeatureBinding.Factory>().toInstance(PathParamFeatureBinding.Factory)

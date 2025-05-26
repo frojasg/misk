@@ -47,6 +47,18 @@ internal class JsonRequestTest {
     assertThat(post("/as-byte-string", Packet("foo")).message).isEqualTo("foo as-byte-string")
   }
 
+  @Test
+  fun malformedJsonReturns400() {
+    val response = webTestClient.post("/as-object", "this is not a json")
+    assertThat(response.response.code).isEqualTo(400)
+  }
+
+  @Test
+  fun invalidSchemaReturns400() {
+    val response = webTestClient.post("/as-object", """{"message": ["this is a list"]}""")
+    assertThat(response.response.code).isEqualTo(400)
+  }
+
   class PassAsObject @Inject constructor() : WebAction {
     @Post("/as-object")
     @RequestContentType(MediaTypes.APPLICATION_JSON)
