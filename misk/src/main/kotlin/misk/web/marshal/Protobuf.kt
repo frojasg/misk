@@ -10,6 +10,7 @@ import okio.BufferedSink
 import okio.BufferedSource
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.net.ProtocolException
 import kotlin.reflect.KType
 import kotlin.reflect.jvm.javaType
 
@@ -40,7 +41,11 @@ class ProtobufMarshaller<T>(val adapter: ProtoAdapter<T>) : Marshaller<T> {
 }
 
 class ProtobufUnmarshaller(val adapter: ProtoAdapter<Any>) : Unmarshaller {
-  override fun unmarshal(requestHeaders: Headers, source: BufferedSource) = adapter.decode(source)
+  override fun unmarshal(requestHeaders: Headers, source: BufferedSource) = try {
+    adapter.decode(source)
+  } catch (e: ProtocolException) {
+    throw UnmarshallingDataException(e.message ?: "failed to parse request", e)
+  }
 
   @Singleton
   class Factory @Inject constructor() : Unmarshaller.Factory {
