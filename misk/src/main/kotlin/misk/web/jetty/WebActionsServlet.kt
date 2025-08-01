@@ -20,16 +20,16 @@ import okio.BufferedSink
 import okio.buffer
 import okio.sink
 import okio.source
+import org.eclipse.jetty.ee8.websocket.server.JettyServerUpgradeResponse
+import org.eclipse.jetty.ee8.websocket.server.JettyWebSocketServlet
+import org.eclipse.jetty.ee8.websocket.server.JettyWebSocketServletFactory
 import org.eclipse.jetty.http.BadMessageException
 import org.eclipse.jetty.http.HttpMethod
+import org.eclipse.jetty.server.HttpChannel
 import org.eclipse.jetty.server.Request
 import org.eclipse.jetty.server.Response
 import org.eclipse.jetty.server.ServerConnector
 import org.eclipse.jetty.unixdomain.server.UnixDomainServerConnector
-import org.eclipse.jetty.unixsocket.server.UnixSocketConnector
-import org.eclipse.jetty.websocket.server.JettyServerUpgradeResponse
-import org.eclipse.jetty.websocket.server.JettyWebSocketServlet
-import org.eclipse.jetty.websocket.server.JettyWebSocketServletFactory
 import wisp.logging.getLogger
 import java.net.HttpURLConnection
 import java.net.ProtocolException
@@ -131,18 +131,18 @@ internal class WebActionsServlet @Inject constructor(
 
       val httpCall = ServletHttpCall.create(
         request = request,
-        linkLayerLocalAddress = with((request as? Request)?.httpChannel) {
-          when (this?.connector) {
+        linkLayerLocalAddress = with((request as? Request)?.let { HttpChannel.from(it) }) {
+          when (this?.connectionMetaData?.connector) {
             is UnixDomainServerConnector -> SocketAddress.Unix(
-              (this.connector as UnixDomainServerConnector).unixDomainPath.toString()
+              (this.connectionMetaData?.connector as UnixDomainServerConnector).unixDomainPath.toString()
             )
 
-            is UnixSocketConnector -> SocketAddress.Unix(
-              (this.connector as UnixSocketConnector).unixSocket
-            )
+            // is UnixSocketConnector -> SocketAddress.Unix(
+            //   (this.connector as UnixSocketConnector).unixSocket
+            // )
 
             is ServerConnector -> SocketAddress.Network(
-              this.endPoint.remoteAddress.address.hostAddress,
+              this.connectionMetaData?.connection?.endPoint?.remoteSocketAddress,
               (this.connector as ServerConnector).localPort
             )
 
